@@ -1,0 +1,82 @@
+# AI Ready Security hands-on exercise: Create a custom blocklist
+
+## Background information
+The configurable content filters are sufficient for most content moderation needs. However, you might need to create custom blocklists in the Azure AI Foundry portal as part of your content filtering configurations to filter terms specific to your use case. 
+
+**Important** As of October 2025, the blocklist functionality is in public preview.
+
+**Important** Blocklist support is limited to Azure OpenAI models.
+
+## Scenario
+Your company plans to create custom blocklists in Azure AI Foundry projects to prevent the use of industry-specific terms such as internal project code names, confidential client identifiers, and sensitive regulatory references that should never appear in generated or processed content. This will ensure that project and hub-based environments enforce compliance by blocking restricted terminology while allowing safe and relevant outputs. By combining these custom blocklists with the existing configurable filters, the organization will achieve precise moderation tailored to both general and business-specific requirements.
+
+## Prerequisites
+- **Azure subscription**: If you don't have an Azure subscription, [create a free account](https://azure.microsoft.com/free/) before you begin.
+- **Permissions**: To create Azure AI Services resources, you should have the Owner role assigned at the Azure subscription or the target resource group level.
+- **Familiarity with Azure AI Content Safety**: To learn more, refer to [Content Safety in the Azure AI Foundry portal](https://learn.microsoft.com/en-us/azure/ai-foundry/ai-services/content-safety-overview).
+
+## Estimated duration
+15 minutes
+
+### Task 1: Create an Azure AI Foundry project
+
+1. Start a web browser, navigate to the **All resources** page of the Azure AI Foundry portal at [https://ai.azure.com/allResources](https://ai.azure.com/allResources) and sign in by providing the credentials of a user account which has the Owner role assigned at the Azure subscription level.
+1. On the **All resources** page of the Azure AI Foundry portal, select **Create new**.
+1. On the **Create project** pane, ensure that the **Azure AI Foundry resource** option is selected and then select **Next**.
+1. On the **Create a project** pane, expand the **Advanced options** section and perform the following tasks:
+
+   - In the **Project** text box, enter an arbitrary project name (we will name it **blocklist-project**).
+   - In the **Subscription** drop-down list, select the subscription you are using in this exercise.
+   - Select **Create new resource group** link, in the **Create new resource group** text box, enter **blocklist-project-RG** and select **OK**.
+   - Accept the default value of the **Azure AI Foundry resource** (**blocklist-project-resource**).
+   - In the **Region** drop-down list, select the Azure region in which you intend to provision the project resource.
+   - Select **Create**.
+
+   **Note**: Wait until the resource is provisioned. This might take about one minute. Once the project is created, the web browser should display the project's **Overview** page.
+
+### Task 2: Create a blocklist
+
+1. In the web browser displaying the Azure AI Foundry portal, on the **Overview** page of **blocklist-project**, in the vertical menu on the left side, select **Guardrails + controls**. 
+1. On the **Build Trusted AI with guardrails and controls** pane, select **Blocklists**.
+1. On the **Guardrails + Controls** page, select **+ Create blocklist**.
+1. On the **Create a blocklist** page, specify the following settings and select **Create blocklist**:
+
+    |Setting|Value|
+    |---|---|
+    |Name|**IndustrySpecific**|
+    |Description|An arbitrary description of the blocklist|
+
+1. Back on the **Guardrails + Controls** page, select the **IndustrySpecific** entry.
+1. On the **IndustrySpecific** page, select **Add new item**.
+1. On the **Add new term** pane, ensure that the **Exact match** option is selected, in the **Term** text box, enter **Project Spartan**, and then select **Add term**.
+1. Back on the **IndustrySpecific** page, select **Add new item** again.
+1. On the **Add new term** pane, select **Regex**, in the **Term** text box, enter **EmpID\\d{6}**, and then select **Add term**.
+
+   **Note**: This notation is intended to reference employee IDs that consist of the **EmpID** prefix followed by six digits.
+
+   **Note**: Adding these project names to a blocklist in Azure AI Foundry would prevent the AI from generating or including references to them in any content or output, ensuring that sensitive, proprietary, or internal project information is never accidentally disclosed. This helps maintain confidentiality, enforces organizational policies around information sharing, and reduces the risk of leaking strategic or experimental project details, while allowing the AI to safely operate in project and hub-based environments without referencing blocked terms.
+
+### Task 3: Attaching the blocklist to a content filter
+
+1. In the web browser displaying the Azure AI Foundry portal, navigate back to the **Build Trusted AI with guardrails and controls** pane and select **Content filters**.
+1. On the **Guardrails + Controls** page, select **+ Create content filter**.
+1. On the **Basic information** tab of the **Create filters to allow or block specific types of content** pane, in the **Name** text box, enter **CustomProjectContentFilter**, and then select **Next**.
+1. On the **Input filter** tab, review briefly the content of the **Set input filter** pane, enable the **Blocklist** setting, in the **Select built-in or customized blocklist** drop-down list, select both built-in **Profanity** and custom **IndustrySpecific** entries and select **Next**.
+1. On the **Output filter** tab, review briefly the content of the **Set output filter** pane, enable the **Blocklist** setting, in the **Select built-in or customized blocklist** drop-down list, select both built-in **Profanity** and custom **IndustrySpecific** entries and select **Next**.
+1. On the **Connection** tab, accept the default settings and select **Next**.
+
+   **Note**: The **Connection** tab allows you to associate the filter you just configured with input/output blocklists to existing projects, hubs, or workloads, ensuring that any content processed in those contexts adheres to the filter's rules. 
+
+1. On the **Review** tab, review the configuration you defined and select **Create filter**.
+
+### Task 4: Perform cleanup
+
+1. In the web browser displaying the Azure AI Foundry portal, navigate back to the **Build Trusted AI with guardrails and controls** pane and select **Content filters**.
+1. On the **Guardrails + Controls** page, select the checkbox next to the **CustomProjectContentFilter** entry, select **Delete**, and, when prompted for confirmation, select **Delete** again.
+1. On the **Guardrails + Controls** page, select **Blocklists**.
+1. In the list of blocklists, select the checkbox next to the **IndustrySpecific** entry, select **Delete**, and, when prompted for confirmation, select **Delete** again.
+1. On the **Guardrails + Controls** page, at the bottom of the navigation menu on the left, select **Management center**.
+1. On the **blocklist-project-resource** page, select the **blocklist-project** entry, select **Delete project**, and, when prompted for confirmation, select **Delete** again.
+1. Open another tab in the web browser displaying the Azure AI Foundry portal, navigate to the Azure portal at [https://portal.azure.com](https://portal.azure.com) and, if prompted, sign in by providing the same credentials you have been using throughout this exercise.
+1. In the Azure portal, use the **Search** text box at the top of the page to search for **blocklist-project-RG** and, in the list of results, select **blocklist-project-RG**.
+1. On the **blocklist-project-RG** page, select **Delete resource group**, on the **Delete a resouce group** pane, in the **Enter resource group name to confirm deletion** text box, enter **blocklist-project-RG**, select **Delete**, and, when prompted for confirmation, select **Delete** again.

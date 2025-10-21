@@ -1,0 +1,104 @@
+# AI Ready Security hands-on exercise: Enhance security of Azure AI Foundry compute resources by using Azure Policy
+
+## Background information
+Azure Policy is a governance tool that allows organizations to enforce standards and ensure that Azure resources remain compliant with defined policies. It provides a framework to define rules and effects that can be applied at the subscription, resource group, or individual resource level. Policies are automatically enforced across all resources within their scope, helping maintain consistent security, operational, and compliance standards.
+
+For Azure AI Foundry, policy definitions can be assigned to hubs and projects. Azure provides a set of built-in policies for common scenarios, which can be assigned directly or used as templates to create custom policies tailored to organizational requirements. When a policy is assigned, it is enforced across both Azure AI Foundry and Azure Machine Learning workspaces. For example, a policy applied at the subscription level that disables public network access will automatically apply to all hubs, projects, and ML workspaces under that subscription.
+
+Initiative definitions in Azure Policy allow you to group multiple individual policy definitions into a single, manageable unit. By using initiatives, you can apply a consistent set of rules across all Azure AI Foundry hubs, projects, and related resources with a single assignment, simplifying governance and compliance management. This approach is particularly beneficial in environments with multiple projects and teams, as it ensures that critical security and operational standards—such as network restrictions, compute updates, and authentication requirements—are uniformly enforced without needing to assign each policy individually.
+
+When a policy is applied, its effect determines whether and how compliance is enforced. For example, an Audit effect allows resources that do not meet the policy criteria to exist but logs noncompliance for reporting and review. A Deny effect actively blocks the creation or modification of resources that would violate the policy, preventing noncompliant configurations. A Disabled effect makes it possible to assign the policy without any enforcement, allowing all actions without restriction. This option can be useful in troubleshooting scenarios. 
+
+Azure Policy definitions relevant to security of Azure AI compute include:
+
+- **Azure Machine Learning compute instances should be recreated to ensure they run on the latest available operating system**. This improves security and reduces vulnerabilities by applying the latest security patches. For more information, refer to https://aka.ms/azureml-ci-updates. Effects of this policy include Audit, Deny, and Disabled (with the default set to Audit).
+- **Azure Machine Learning compute resources should be deployed within a virtual network** to provide enhanced security and isolation for compute clusters and instances. By using virtual networks, subnets, and access control policies, public access is prevented, and compute resources can only be accessed from within the virtual network. Effects of this policy include Audit and Disabled (with the default set to Audit).
+- **Azure Machine Learning compute resources should have local authentication methods disabled** to improve security by requiring Microsoft Entra ID identities exclusively for authentication. This prevents the use of local credentials. For more information, refer to https://aka.ms/azure-ml-aad-policy. Effects of this policy include Audit, Deny, and Disabled (with the default set to Audit).
+
+## Scenario
+Your company, a healthcare analytics organization that develops AI-driven models for patient risk prediction, treatment optimization, and clinical decision support, plans to implement a comprehensive governance framework for its Azure AI Foundry and Azure Machine Learning environments. Given the highly sensitive nature of patient data and the strict regulatory requirements in the healthcare industry, it is critical to ensure that all compute resources remain secure, up to date, and compliant with organizational standards. By applying both built-in and custom policy definitions, the company will be able to enforce operational controls tailored to the healthcare context, such as requiring compute instances to run the latest operating system updates to reduce vulnerabilities, restricting network access to virtual networks to prevent unauthorized data exposure, and disabling local authentication methods in favor of Microsoft Entra ID-based access to ensure secure and auditable access. This approach will reduce security risks, strengthen access controls, and maintain consistent operational standards across all AI workloads that handle sensitive patient information.
+
+To streamline policy management and enforce consistent rules across multiple teams and projects, the company will use an initiative definition. The initiative will allow the grouping of individual policies covering compute updates, network isolation, and authentication controls into a single, assignable unit. By using initiatives, the company will ensure that all Azure AI Foundry hubs, projects, and Azure Machine Learning workspaces adhere to the same set of security and compliance requirements, simplifying oversight and reducing the risk of misconfigurations.
+
+## Prerequisites
+- **Azure subscription**: If you don't have an Azure subscription, [create a free account](https://azure.microsoft.com/free/) before you begin.
+- **Permissions**: To create and assign policies, you should have the Owner or Resource Policy Contributor role assigned at the Azure subscription level.
+- **Familiarity with Azure Policy**: To learn more, refer to [What is Azure Policy?](https://learn.microsoft.com/azure/governance/policy/overview)
+
+## Estimated duration
+15 minutes
+
+### Task 1: Create an initiative by combining a built-in and custom policy definition
+
+1. Start a web browser, navigate to the Azure portal at [https://portal.azure.com](https://portal.azure.com) and sign in by providing the credentials of a user account which has the Owner or Resource Policy Contributor role assigned at the Azure subscription level.
+1. In the Azure portal, use the **Search** text box at the top of the page to search for **Policy** and, in the list of results, select **Policy**.
+1. On the **Policy** page, from the left side menu, select **Authoring**, then select **Definitions**, and then select **+ Initiative definition**.
+1. On the **Basics** tab of the **Policy definition** page, perform the following tasks and then select **Next**:
+
+   - Select the **ellipsis** button next to the **Initiative location** text box and then select the subscription you are using in this exercise. This selection determines where the initiative definition will be stored.
+   - In the **Name** text box, enter a descriptive name of the new initiative definition (we will use **[Custom] Enhance security of Azure AI Foundry compute resources**).
+   - In the **Description** text box, enter an arbitrary description of the policy definition.
+   - In the **Category** text box, you can either create a new category (such as `AI security`) or use an existing one (such as `Azure Ai Services).
+
+1. On the **Policies** tab of the **Initiative definition** page, select **Add policy definition(s)**.
+1. On the **Add policy definition(s)** pane, in the **Search** text box, enter **Azure Machine Learning compute instances should be recreated to get the latest software updates** and, in the list of results, select the checkbox next to the entry **Azure Machine Learning compute instances should be recreated to get the latest software updates**. 
+
+   **Note**: Do not select **Add** yet.
+
+1. On the same pane, in the **Search** text box, enter **Azure Machine Learning Computes should be in a virtual network** and, in the list of results, select the checkbox next to the entry **Azure Machine Learning Computes should be in a virtual network**.
+1. On the same pane, in the **Search** text box, enter **Azure Machine Learning Computes should have local authentication method disabled** and, in the list of results, select the checkbox next to the entry **Azure Machine Learning Computes should have local authentication method disabled**.
+1. On the **Add policy definition(s)** pane, select **Save**.
+1. Back on the **Policies** tab of the **Initiative definition** page, select **Next**.
+1. On the **Groups** tab of the **Initiative definition** page, select **Next**.
+
+   **Note**: Groups help you organize policy definitions within an initiative.
+
+1. On the **Initiative parameters** tab of the **Initiative definition** page, select **Next**.
+
+   **Note**: Initiative parameters allow parameter values to be re-used across individual policy parameters. They can also be used to specify parameter values at assignment time.
+
+1. On the **Policy parameters** tab, select **Review + create** and then, on the **Review + create** tab, select **Create**. Once the initiative is created, the web browser should display the policy initiative's overview page.
+
+### Task 2: Assign the initiative
+
+1. In the web browser displaying the Azure portal, from the policy initiative's overview page, select **Assign initiative**.
+1. On the **Basics** tab of the **Assign initiative** page, specify the following settings and select **Next**:
+
+   |Setting|Value|
+   |---|---|
+   |Subscription|The name of the Azure subscription you are using in this exercise|
+   |Exclusions|None|
+   |Initiative definition|**[Custom] Enhance security of Azure AI Foundry compute resources**|
+   |Assignment name|**[Custom] Enhance security of Azure AI Foundry compute resources**|
+   |Description|An arbitrary description of the initiative definition assignment|
+   |Policy enforcement|**Enabled**|
+ 
+1. On the **Parameters** tab of the **Assign initiative** page, select **Next**.
+1. On the **Remediation** tab, select **Next**.
+1. On the **Non-compliance messages**, select **Review + create** and then, on the **Review + create** tab, select **Create**.
+
+### Task 3: Verify the initiative assignment
+
+1. In the web browser displaying the Azure portal, navigate back to the **Policy** page.
+1. On the **Policy** page, from the left side menu, select **Authoring** and then select **Assignments**. 
+1. On the **Policy \| Assignments page**, in the search box, enter the name of the initiative assignment (**[Custom] Enhance security of Azure AI Foundry resources**).
+1. Verify that the new initiative definition assignment is listed in the search results.
+
+### Task 4: Review the initiative compliance
+
+1. In the web browser displaying the Azure portal, on the **Policy** page, from the left side menu, select **Compliance**.
+1. On the **Policy \| Compliance page**, in the search box, enter the initiative assignment name (**[Custom] Enhance security of Azure AI Foundry compute resources**).
+1. In the list of search results, select **[Custom] Enhance security of Azure AI Foundry compute resources**.
+1. On the **[Custom] Enhance security of Azure AI Foundry compute resources** page, review the compliance status details.
+
+   **Note**: You might need to wait in order for the compliance status to be evaluated and displayed in the Azure portal. Check the **Compliance state** value on the **[Custom] Enhance security of Azure AI Foundry compute resources** page to determine whether evaluation has started.
+
+### Task 5: Perform cleanup
+
+1. In the web browser displaying the Azure portal, navigate back to **Policy** page.
+1. On the **Policy** page, from the left side menu, select **Authoring** and then select **Assignments**.
+1. On the **Policy \| Assignments page**, in the search box, enter the name of the initiative assignment (**[Custom] Enhance security of Azure AI Foundry compute resources**).
+1. In the search results, select the ellipsis on the right side of the **[Custom] Enhance security of Azure AI Foundry compute resources** entry, in the drop-down menu, select **Delete assignment**, and, when prompted for confirmation, select **Yes**.
+1. On the **Policy** page, from the left side menu, select **Authoring** and then select **Definitions**.
+1. On the **Policy \| Definitions page**, in the search box, enter the name of the policy initiative (**[Custom] Enhance security of Azure AI Foundry compute resources**).
+1. In the search results, select the ellipsis on the right side of the **[Custom] Enhance security of Azure AI Foundry compute resources** entry, in the drop-down menu, select **Delete definition**, and, when prompted for confirmation, select **Yes**.
